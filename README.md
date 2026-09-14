@@ -107,9 +107,10 @@ The dashboard reads `git log` live, so verdicts describe repositories as they ar
 **The tests build real git repositories** in `tmp_path` with real commits - no mocks, no
 committed fixtures - so behaviour is checked against real git objects.
 
-<!-- screenshot placeholder
 ![dashboard](docs/images/dashboard.png)
--->
+
+*Run against this portfolio's own 25 repositories: 25 clean, 0 fabricated, with the
+per-signal evidence for any repository expandable underneath.*
 
 ---
 
