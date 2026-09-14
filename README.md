@@ -98,6 +98,81 @@ the one that is defensible to publish — is measuring how visible the fabricati
 `src/synthesize.py` exists **only** to produce ground truth for the detector. It writes to
 a temporary directory and pushes nowhere.
 
+---
+
+## How it works
+
+```mermaid
+flowchart TD
+    A["any git repository"] --> B["src/features.py<br/>git log --numstat"]
+    B --> C["structural fingerprint"]
+    C --> D1["author vs committer<br/>timestamp skew"]
+    C --> D2["files per commit"]
+    C --> D3["subject entropy<br/>and uniqueness"]
+    C --> D4["commits per active day"]
+    C --> D5["active-day share<br/>over the span"]
+    D1 --> E["src/score.py<br/>5 signals, stated thresholds"]
+    D2 --> E
+    D3 --> E
+    D4 --> E
+    D5 --> E
+    E --> F{"how many fired?"}
+    F -->|"3 or more"| G["FABRICATED"]
+    F -->|"2"| H["SUSPICIOUS"]
+    F -->|"0-1"| I["CLEAN"]
+    S["src/synthesize.py<br/>builds fakes as ground truth"] --> A
+    style G fill:#dc2626,color:#fff
+    style H fill:#f59e0b,color:#fff
+    style I fill:#16a34a,color:#fff
+```
+
+Nothing is trained. Every threshold sits in `src/score.py` beside its reasoning, so a
+reader can disagree with a specific number rather than with a black box.
+
+---
+
+## Problems hit while building this
+
+| Problem | What happened | Fix |
+|---|---|---|
+| **Empty repo crashed** | `git log` exits non-zero on a repo with a branch but no commits, so the scanner raised `RuntimeError` instead of reporting an empty history | Detect that specific stderr and return an empty list; the caller decides what emptiness means |
+| **A short fake only reached SUSPICIOUS** | Shrinking the test fixture to 40 days silently defeated two signals gated on a 60-day span. The easy move was to lengthen the fixture and say nothing | Kept **both**: a 90-day fixture asserting FABRICATED, *and* a 40-day one asserting the weaker verdict, so the limitation is documented rather than hidden |
+| **CI could not commit** | The tests build real git repositories, and the runner has no git identity, so every fixture failed | Configure `user.name`, `user.email` and `init.defaultBranch` in the workflow |
+| **`subprocess.run` lint failure** | `ruff` flagged a missing `check=` on calls that deliberately inspect the return code themselves | Passed `check=False` explicitly, with a comment saying why |
+| **CI cache misconfigured** | `setup-uv` errors outright when its default `**/uv.lock` glob matches nothing | Keyed the cache on `pyproject.toml` |
+
+---
+
+## Future work
+
+1. **A larger, more varied genuine corpus.** 25 repositories with roughly five commits
+   each, all by one author, is weak evidence for "no false positives". Mining a few
+   hundred real public repositories would make that claim mean something.
+2. **Multi-author signals.** Every repository tested has a single author. Real projects
+   have contributor distributions, review latency and merge patterns that a generator
+   does not reproduce.
+3. **Diff-content signals.** The current signals are purely structural. Whether commits
+   change meaningful code, or rewrite the same line forever, is unused.
+4. **Calibrated scoring** instead of a 3-of-5 rule: a likelihood ratio per signal would
+   produce a probability rather than a label.
+5. **Harden against the documented evasion** - a short, committer-date-faked history with
+   varied files and messages currently reaches only SUSPICIOUS.
+6. **Ship as a GitHub Action** that reports on a pull request.
+
+---
+
+## Stack
+
+`Python 3.11+` · `git` · `Streamlit` · `Altair` · `pandas` · `pytest` · `ruff` ·
+`GitHub Actions` - the detector itself uses the standard library only
+
+## Keywords
+
+git forensics · commit history analysis · fake GitHub contributions · contribution graph ·
+fabricated commits · backdated commits · GIT_COMMITTER_DATE · git metadata analysis ·
+developer analytics · repository mining · MSR · fraud detection · anomaly detection ·
+software engineering research · resume verification · open source integrity
+
 ## Layout
 
 ```
