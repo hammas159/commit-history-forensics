@@ -13,6 +13,10 @@ jobs:
       - uses: astral-sh/setup-uv@v3
         with:
           enable-cache: true
+          # There is no uv.lock committed, and the default glob (**/uv.lock)
+          # makes setup-uv fail outright when it matches nothing. Key the cache
+          # on pyproject.toml instead.
+          cache-dependency-glob: "**/pyproject.toml"
       - run: uv sync --all-groups
       - name: Configure git for the fixtures
         # The tests build real repositories with real commits; git refuses to commit
