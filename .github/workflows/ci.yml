@@ -1,0 +1,30 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+      - run: uv sync --all-groups
+      - name: Configure git for the fixtures
+        # The tests build real repositories with real commits; git refuses to commit
+        # without an identity, and the runner has none by default.
+        run: |
+          git config --global user.name "ci"
+          git config --global user.email "ci@example.invalid"
+          git config --global init.defaultBranch main
+      - name: Lint
+        run: |
+          uv run ruff check src tests ui
+          uv run ruff format --check src tests ui
+      - name: Test
+        # No network: every fixture is a repository this suite creates itself.
+        run: uv run pytest -q
