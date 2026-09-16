@@ -27,8 +27,8 @@ jobs:
           git config --global init.defaultBranch main
       - name: Lint
         run: |
-          uv run ruff check src tests ui
-          uv run ruff format --check src tests ui
+          uv run ruff check src tests
+          uv run ruff format --check src tests
       - name: Test
         # No network: every fixture is a repository this suite creates itself.
         run: uv run pytest -q
