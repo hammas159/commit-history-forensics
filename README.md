@@ -98,19 +98,29 @@ directory and pushes nowhere.
 python src/features.py   <folder-of-repos>   # raw fingerprints
 python src/score.py      <folder-of-repos>   # verdicts
 python src/synthesize.py <output-folder>     # build fakes to test against
-streamlit run ui/app.py                      # dashboard
 pytest -q                                    # 13 tests
 ```
 
-The dashboard reads `git log` live, so verdicts describe repositories as they are now.
+It reads `git log` live, so verdicts describe repositories as they are now.
 
 **The tests build real git repositories** in `tmp_path` with real commits - no mocks, no
 committed fixtures - so behaviour is checked against real git objects.
 
-![dashboard](docs/images/dashboard.png)
+---
 
-*Run against this portfolio's own 25 repositories: 25 clean, 0 fabricated, with the
-per-signal evidence for any repository expandable underneath.*
+## Input
+
+A folder of git repositories. Here, two fabricated histories and one honest control,
+all built by `synthesize.py` so the ground truth is known.
+
+![input](docs/images/input.png)
+
+## Output
+
+![output](docs/images/output.png)
+
+*`fake_hidden` forges the committer date too, so `backdated_commits` never fires — it is
+caught by `single_file_every_commit` instead. The honest control draws zero flags.*
 
 ---
 
@@ -145,14 +155,13 @@ quietly disappear or quietly get worse.
 src/features.py     structural fingerprint of a history, from git log
 src/score.py        five signals with stated thresholds, and the verdict
 src/synthesize.py   generate fabricated histories (ground truth only)
-ui/app.py           Streamlit dashboard
 tests/              13 tests that build real git repositories
 docs/               detailed documentation
 ```
 
 ## Stack
 
-`Python 3.11+` &middot; `git` &middot; `Streamlit` &middot; `Altair` &middot; `pandas`
+`Python 3.11+` &middot; `git` &middot; `pandas`
 &middot; `pytest` &middot; `ruff` &middot; `GitHub Actions` - the detector itself uses the
 **standard library only**
 

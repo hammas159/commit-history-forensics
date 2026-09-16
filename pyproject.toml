@@ -6,7 +6,6 @@ requires-python = ">=3.11"
 dependencies = []
 
 [project.optional-dependencies]
-ui = ["streamlit>=1.40", "altair>=5", "pandas>=2.2"]
 
 [dependency-groups]
 # ruff pinned to a minor range: the formatter changes between minor versions, so an
