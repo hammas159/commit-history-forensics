@@ -1,4 +1,4 @@
-<h1 align="center">commit-history-forensics</h1>
+<h1 align="center">commit-history-forensics (Python · Git · timestamp forensics)</h1>
 <p align="center"><i>Does this commit history describe work that happened?</i></p>
 
 <p align="center">
